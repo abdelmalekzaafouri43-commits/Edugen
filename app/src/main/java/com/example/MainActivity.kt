@@ -443,60 +443,105 @@ fun AIAgentContent() {
       )
     }
 
-    Column(
+    Row(
       modifier = Modifier
         .fillMaxSize()
-        .padding(16.dp)
+        .padding(16.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-      // Chat Messages Area
-      LazyColumn(
+      // AI Agent Chat Area (Narrowed)
+      Column(
         modifier = Modifier
-          .weight(1f)
-          .fillMaxWidth(),
-        contentPadding = PaddingValues(bottom = 16.dp),
-        verticalArrangement = Arrangement.spacedBy(16.dp)
+          .weight(0.45f)
+          .fillMaxHeight()
       ) {
-        items(messages.size) { index ->
-          val msg = messages[index]
-          ChatBubble(message = msg)
+        // Chat Messages Area
+        LazyColumn(
+          modifier = Modifier
+            .weight(1f)
+            .fillMaxWidth(),
+          contentPadding = PaddingValues(bottom = 16.dp),
+          verticalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+          items(messages.size) { index ->
+            val msg = messages[index]
+            ChatBubble(message = msg)
+          }
         }
+
+        // Glass Input Area
+        GlassInputField(
+          value = messageText,
+          onValueChange = { messageText = it },
+          onSend = {
+            if (messageText.isNotBlank() && !isLoading) {
+              val userMsg = messageText
+              messages.add(ChatMessage(userMsg, true))
+              messageText = ""
+              isLoading = true
+              
+              scope.launch {
+                  try {
+                      val apiKey = BuildConfig.GEMINI_API_KEY
+                      if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
+                          messages.add(ChatMessage("API Key is missing! Please configure it in the AI Studio Secrets panel.", false))
+                          isLoading = false
+                          return@launch
+                      }
+                      val request = GenerateContentRequest(
+                          contents = listOf(Content(parts = listOf(Part(text = userMsg))))
+                      )
+                      val response = RetrofitClient.service.generateContent(apiKey, request)
+                      val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "I am not sure how to respond to that."
+                      messages.add(ChatMessage(text, false))
+                  } catch (e: Exception) {
+                      messages.add(ChatMessage("Error communicating with AI: ${e.message}", false))
+                  } finally {
+                      isLoading = false
+                  }
+              }
+            }
+          },
+          isLoading = isLoading
+        )
       }
 
-      // Glass Input Area
-      GlassInputField(
-        value = messageText,
-        onValueChange = { messageText = it },
-        onSend = {
-          if (messageText.isNotBlank() && !isLoading) {
-            val userMsg = messageText
-            messages.add(ChatMessage(userMsg, true))
-            messageText = ""
-            isLoading = true
-            
-            scope.launch {
-                try {
-                    val apiKey = BuildConfig.GEMINI_API_KEY
-                    if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
-                        messages.add(ChatMessage("API Key is missing! Please configure it in the AI Studio Secrets panel.", false))
-                        isLoading = false
-                        return@launch
-                    }
-                    val request = GenerateContentRequest(
-                        contents = listOf(Content(parts = listOf(Part(text = userMsg))))
-                    )
-                    val response = RetrofitClient.service.generateContent(apiKey, request)
-                    val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "I am not sure how to respond to that."
-                    messages.add(ChatMessage(text, false))
-                } catch (e: Exception) {
-                    messages.add(ChatMessage("Error communicating with AI: ${e.message}", false))
-                } finally {
-                    isLoading = false
-                }
-            }
+      // Worksheet Preview Area (New space on the right)
+      Surface(
+        modifier = Modifier
+          .weight(0.55f)
+          .fillMaxHeight(),
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(24.dp),
+        border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
+      ) {
+        Box(
+          contentAlignment = Alignment.Center,
+          modifier = Modifier.fillMaxSize().padding(16.dp)
+        ) {
+          Column(horizontalAlignment = Alignment.CenterHorizontally) {
+            Icon(
+              imageVector = Icons.Default.Description,
+              contentDescription = null,
+              modifier = Modifier.size(64.dp),
+              tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+            )
+            Spacer(modifier = Modifier.height(16.dp))
+            Text(
+              text = "Worksheet Preview",
+              style = MaterialTheme.typography.titleLarge,
+              color = MaterialTheme.colorScheme.onSurface
+            )
+            Spacer(modifier = Modifier.height(8.dp))
+            Text(
+              text = "Ask the AI Agent to generate content to see it here.",
+              style = MaterialTheme.typography.bodyMedium,
+              color = MaterialTheme.colorScheme.onSurfaceVariant,
+              textAlign = androidx.compose.ui.text.style.TextAlign.Center
+            )
           }
-        },
-        isLoading = isLoading
-      )
+        }
+      }
     }
   }
 }
@@ -613,51 +658,54 @@ fun WorksheetGenContent() {
   var topic by remember { mutableStateOf("") }
   var gradeLevel by remember { mutableStateOf("") }
 
-  LazyColumn(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(horizontal = 16.dp),
-    contentPadding = PaddingValues(bottom = 32.dp),
-    verticalArrangement = Arrangement.spacedBy(24.dp)
-  ) {
-    item {
-      Spacer(modifier = Modifier.height(8.dp))
-      Text(
-        text = "Generate Worksheet",
-        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.onBackground
-      )
-      Spacer(modifier = Modifier.height(8.dp))
-      Text(
-        text = "Configure parameters to generate a custom student worksheet.",
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-    }
-
-    item {
-      GlassTextField(
-        value = topic,
-        onValueChange = { topic = it },
-        placeholder = "Topic (e.g., Photosynthesis)"
-      )
-    }
-
-    item {
-      GlassTextField(
-        value = gradeLevel,
-        onValueChange = { gradeLevel = it },
-        placeholder = "Grade Level (e.g., 8th Grade)"
-      )
-    }
-    
-    item {
-        Spacer(modifier = Modifier.height(16.dp))
-        GradientButton(
-          text = "Generate Output",
-          icon = Icons.Default.AutoAwesome,
-          onClick = { /* TODO: Trigger generation */ }
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+    LazyColumn(
+      modifier = Modifier
+        .widthIn(max = 600.dp)
+        .fillMaxHeight()
+        .padding(horizontal = 16.dp),
+      contentPadding = PaddingValues(bottom = 32.dp),
+      verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+      item {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+          text = "Generate Worksheet",
+          style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+          color = MaterialTheme.colorScheme.onBackground
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+          text = "Configure parameters to generate a custom student worksheet.",
+          style = MaterialTheme.typography.bodyLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
+
+      item {
+        GlassTextField(
+          value = topic,
+          onValueChange = { topic = it },
+          placeholder = "Topic (e.g., Photosynthesis)"
+        )
+      }
+
+      item {
+        GlassTextField(
+          value = gradeLevel,
+          onValueChange = { gradeLevel = it },
+          placeholder = "Grade Level (e.g., 8th Grade)"
+        )
+      }
+      
+      item {
+          Spacer(modifier = Modifier.height(16.dp))
+          GradientButton(
+            text = "Generate Output",
+            icon = Icons.Default.AutoAwesome,
+            onClick = { /* TODO: Trigger generation */ }
+          )
+      }
     }
   }
 }
@@ -667,51 +715,54 @@ fun PowerPointGenContent() {
   var presentationTopic by remember { mutableStateOf("") }
   var audience by remember { mutableStateOf("") }
 
-  LazyColumn(
-    modifier = Modifier
-      .fillMaxSize()
-      .padding(horizontal = 16.dp),
-    contentPadding = PaddingValues(bottom = 32.dp),
-    verticalArrangement = Arrangement.spacedBy(24.dp)
-  ) {
-    item {
-      Spacer(modifier = Modifier.height(8.dp))
-      Text(
-        text = "Generate PowerPoint",
-        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
-        color = MaterialTheme.colorScheme.onBackground
-      )
-      Spacer(modifier = Modifier.height(8.dp))
-      Text(
-        text = "Instantly build beautiful slide decks with AI assistance.",
-        style = MaterialTheme.typography.bodyLarge,
-        color = MaterialTheme.colorScheme.onSurfaceVariant
-      )
-    }
-
-    item {
-      GlassTextField(
-        value = presentationTopic,
-        onValueChange = { presentationTopic = it },
-        placeholder = "Presentation Topic"
-      )
-    }
-
-    item {
-      GlassTextField(
-        value = audience,
-        onValueChange = { audience = it },
-        placeholder = "Target Audience (e.g., Beginners)"
-      )
-    }
-    
-    item {
-        Spacer(modifier = Modifier.height(16.dp))
-        GradientButton(
-          text = "Generate Slides",
-          icon = Icons.Default.Slideshow,
-          onClick = { /* TODO: Trigger generation */ }
+  Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.TopCenter) {
+    LazyColumn(
+      modifier = Modifier
+        .widthIn(max = 600.dp)
+        .fillMaxHeight()
+        .padding(horizontal = 16.dp),
+      contentPadding = PaddingValues(bottom = 32.dp),
+      verticalArrangement = Arrangement.spacedBy(24.dp)
+    ) {
+      item {
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+          text = "Generate PowerPoint",
+          style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+          color = MaterialTheme.colorScheme.onBackground
         )
+        Spacer(modifier = Modifier.height(8.dp))
+        Text(
+          text = "Instantly build beautiful slide decks with AI assistance.",
+          style = MaterialTheme.typography.bodyLarge,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
+      }
+
+      item {
+        GlassTextField(
+          value = presentationTopic,
+          onValueChange = { presentationTopic = it },
+          placeholder = "Presentation Topic"
+        )
+      }
+
+      item {
+        GlassTextField(
+          value = audience,
+          onValueChange = { audience = it },
+          placeholder = "Target Audience (e.g., Beginners)"
+        )
+      }
+      
+      item {
+          Spacer(modifier = Modifier.height(16.dp))
+          GradientButton(
+            text = "Generate Slides",
+            icon = Icons.Default.Slideshow,
+            onClick = { /* TODO: Trigger generation */ }
+          )
+      }
     }
   }
 }
