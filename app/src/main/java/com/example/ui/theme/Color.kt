@@ -29,9 +29,10 @@ val EmeraldBackground = Color(0xFF022C22)
 val EmeraldSurface = Color(0xFF064E3B)
 val EmeraldSurfaceVariant = Color(0xFF065F46)
 
-// Sunset Dark
-val SunsetOrange = Color(0xFFF97316)
-val SunsetPink = Color(0xFFEC4899)
-val SunsetBackground = Color(0xFF2C1011)
-val SunsetSurface = Color(0xFF4C1D20)
-val SunsetSurfaceVariant = Color(0xFF70282D)
+// Violet Dark
+val VioletPrimary = Color(0xFF8B5CF6)
+val VioletSecondary = Color(0xFFC4B5FD)
+val VioletTertiary = Color(0xFF6D28D9)
+val VioletBackground = Color(0xFF1E1B4B)
+val VioletSurface = Color(0xFF2E1065)
+val VioletSurfaceVariant = Color(0xFF4C1D95)

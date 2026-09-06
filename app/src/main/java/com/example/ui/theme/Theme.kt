@@ -10,7 +10,7 @@ enum class AppTheme(val title: String) {
     SAPPHIRE_DARK("Sapphire Dark"),
     HIGH_CONTRAST_LIGHT("High Contrast Light"),
     EMERALD_DARK("Emerald Dark"),
-    SUNSET_DARK("Sunset Dark")
+    VIOLET_DARK("Violet Dark")
 }
 
 private val SapphireColorScheme = darkColorScheme(
@@ -58,18 +58,18 @@ private val EmeraldColorScheme = darkColorScheme(
     onSurfaceVariant = TextSecondary,
 )
 
-private val SunsetColorScheme = darkColorScheme(
-    primary = SunsetOrange,
+private val VioletColorScheme = darkColorScheme(
+    primary = VioletPrimary,
     onPrimary = TextPrimary,
-    secondary = SunsetPink,
-    onSecondary = SunsetBackground,
-    tertiary = SunsetPink,
-    onTertiary = SunsetBackground,
-    background = SunsetBackground,
+    secondary = VioletSecondary,
+    onSecondary = VioletBackground,
+    tertiary = VioletTertiary,
+    onTertiary = VioletBackground,
+    background = VioletBackground,
     onBackground = TextPrimary,
-    surface = SunsetSurface,
+    surface = VioletSurface,
     onSurface = TextPrimary,
-    surfaceVariant = SunsetSurfaceVariant,
+    surfaceVariant = VioletSurfaceVariant,
     onSurfaceVariant = TextSecondary,
 )
 
@@ -82,7 +82,7 @@ fun MyApplicationTheme(
         AppTheme.SAPPHIRE_DARK -> SapphireColorScheme
         AppTheme.HIGH_CONTRAST_LIGHT -> LightColorScheme
         AppTheme.EMERALD_DARK -> EmeraldColorScheme
-        AppTheme.SUNSET_DARK -> SunsetColorScheme
+        AppTheme.VIOLET_DARK -> VioletColorScheme
     }
 
     MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)

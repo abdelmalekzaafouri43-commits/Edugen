@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" data-theme="sapphire">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
@@ -10,13 +10,14 @@
             theme: {
                 extend: {
                     colors: {
-                        sapphire: '#0F52BA',
-                        sapphireDark: '#082C66',
-                        electric: '#BF00FF',
-                        vibrantcyan: '#00EAFF',
-                        darkbg: '#070B19',
-                        surface: '#121A2F',
-                        surfacevariant: '#1D2845'
+                        primary: 'var(--color-primary)',
+                        secondary: 'var(--color-secondary)',
+                        tertiary: 'var(--color-tertiary)',
+                        darkbg: 'var(--color-darkbg)',
+                        surface: 'var(--color-surface)',
+                        surfacevariant: 'var(--color-surfacevariant)',
+                        textmain: 'var(--color-textmain)',
+                        textmuted: 'var(--color-textmuted)'
                     },
                     fontFamily: {
                         sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
@@ -30,17 +31,63 @@
     <style>
         @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
         
+        :root, [data-theme="sapphire"] {
+            --color-primary: #0F52BA;
+            --color-secondary: #00EAFF;
+            --color-tertiary: #BF00FF;
+            --color-darkbg: #070B19;
+            --color-surface: #121A2F;
+            --color-surfacevariant: #1D2845;
+            --color-textmain: #F3F4F6;
+            --color-textmuted: #9CA3AF;
+        }
+
+        [data-theme="emerald"] {
+            --color-primary: #10B981;
+            --color-secondary: #6EE7B7;
+            --color-tertiary: #047857;
+            --color-darkbg: #022C22;
+            --color-surface: #064E3B;
+            --color-surfacevariant: #065F46;
+            --color-textmain: #F3F4F6;
+            --color-textmuted: #A7F3D0;
+        }
+
+        [data-theme="violet"] {
+            --color-primary: #8B5CF6;
+            --color-secondary: #C4B5FD;
+            --color-tertiary: #6D28D9;
+            --color-darkbg: #1E1B4B;
+            --color-surface: #2E1065;
+            --color-surfacevariant: #4C1D95;
+            --color-textmain: #F3F4F6;
+            --color-textmuted: #DDD6FE;
+        }
+
+        [data-theme="light"] {
+            --color-primary: #0047AB;
+            --color-secondary: #D946EF;
+            --color-tertiary: #0047AB;
+            --color-darkbg: #FFFFFF;
+            --color-surface: #F3F4F6;
+            --color-surfacevariant: #E5E7EB;
+            --color-textmain: #111827;
+            --color-textmuted: #374151;
+        }
+
         body {
-            background-color: #070B19;
-            color: #F3F4F6;
+            background-color: var(--color-darkbg);
+            color: var(--color-textmain);
+            transition: background-color 0.3s ease, color 0.3s ease;
         }
 
         /* Glowing Border for Cards */
         .glow-card {
             position: relative;
-            background: #121A2F;
+            background: var(--color-surface);
             border-radius: 1.25rem;
             z-index: 1;
+            transition: background-color 0.3s ease;
         }
         
         .glow-card::before {
@@ -48,7 +95,7 @@
             position: absolute;
             inset: -2px;
             border-radius: 1.35rem;
-            background: linear-gradient(45deg, #00EAFF, #BF00FF);
+            background: linear-gradient(45deg, var(--color-secondary), var(--color-tertiary));
             z-index: -1;
             opacity: 0.8;
             transition: opacity 0.3s ease;
@@ -61,8 +108,9 @@
 
         /* Gradient Button */
         .gradient-btn {
-            background: linear-gradient(90deg, #0F52BA, #BF00FF);
+            background: linear-gradient(90deg, var(--color-primary), var(--color-tertiary));
             transition: transform 0.2s ease, filter 0.2s ease;
+            color: #ffffff; /* keep text white inside gradient buttons */
         }
         
         .gradient-btn:hover {
@@ -90,31 +138,49 @@
             position: absolute;
             width: 50vw;
             height: 50vw;
-            background: radial-gradient(circle, rgba(15,82,186,0.3) 0%, rgba(7,11,25,0) 70%);
+            background: radial-gradient(circle, var(--color-primary) 0%, rgba(7,11,25,0) 70%);
             top: -10%;
             left: -10%;
             z-index: 0;
             pointer-events: none;
+            opacity: 0.3;
         }
         
         .ambient-orb-2 {
             position: absolute;
             width: 40vw;
             height: 40vw;
-            background: radial-gradient(circle, rgba(191,0,255,0.2) 0%, rgba(7,11,25,0) 70%);
+            background: radial-gradient(circle, var(--color-tertiary) 0%, rgba(7,11,25,0) 70%);
             bottom: -10%;
             right: -10%;
             z-index: 0;
             pointer-events: none;
+            opacity: 0.2;
         }
 
         /* Sidebar transitions */
         .sidebar-transition {
-            transition: transform 0.3s ease-in-out;
+            transition: transform 0.3s ease-in-out, background-color 0.3s ease;
+        }
+
+        /* Dynamic classes for theme switcher checkmarks */
+        .theme-card {
+            border-color: var(--color-surfacevariant);
+            opacity: 0.75;
+        }
+        .theme-card.active {
+            border-color: var(--color-secondary);
+            opacity: 1;
+        }
+        .theme-card.active .theme-icon {
+            color: var(--color-secondary);
+        }
+        .theme-card.active .theme-bg {
+            opacity: 0.1;
         }
     </style>
 </head>
-<body class="h-screen w-screen overflow-hidden flex font-sans text-gray-100">
+<body class="h-screen w-screen overflow-hidden flex font-sans">
 
     <!-- Mobile Sidebar Overlay -->
     <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
@@ -122,8 +188,8 @@
     <!-- Sidebar -->
     <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-72 bg-surface border-r border-surfacevariant transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col">
         <div class="p-6 flex items-center justify-between">
-            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sapphire to-electric">EduGen</h1>
-            <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()">
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-primary to-tertiary">EduGen</h1>
+            <button class="md:hidden text-textmuted hover:text-textmain" onclick="toggleSidebar()">
                 <i class="ph ph-x text-2xl"></i>
             </button>
         </div>
@@ -133,23 +199,23 @@
         </div>
 
         <nav class="flex-1 px-4 space-y-2">
-            <button onclick="switchView('home')" id="nav-home" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-sapphire/20 text-vibrantcyan transition-colors">
+            <button onclick="switchView('home')" id="nav-home" class="nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/20 text-secondary transition-colors">
                 <i class="ph ph-house text-xl"></i>
                 <span class="font-medium">Home</span>
             </button>
-            <button onclick="switchView('tutor')" id="nav-tutor" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+            <button onclick="switchView('tutor')" id="nav-tutor" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-textmuted hover:bg-surfacevariant/50 hover:text-textmain transition-colors">
                 <i class="ph ph-robot text-xl"></i>
                 <span class="font-medium">AI Tutor</span>
             </button>
-            <button onclick="switchView('templates')" id="nav-templates" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+            <button onclick="switchView('templates')" id="nav-templates" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-textmuted hover:bg-surfacevariant/50 hover:text-textmain transition-colors">
                 <i class="ph ph-file-text text-xl"></i>
                 <span class="font-medium">Templates</span>
             </button>
-            <button onclick="switchView('history')" id="nav-history" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+            <button onclick="switchView('history')" id="nav-history" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-textmuted hover:bg-surfacevariant/50 hover:text-textmain transition-colors">
                 <i class="ph ph-clock-counter-clockwise text-xl"></i>
                 <span class="font-medium">History</span>
             </button>
-            <button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+            <button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-textmuted hover:bg-surfacevariant/50 hover:text-textmain transition-colors">
                 <i class="ph ph-gear text-xl"></i>
                 <span class="font-medium">Settings</span>
             </button>
@@ -157,11 +223,11 @@
     </aside>
 
     <!-- Main Content -->
-    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden bg-darkbg transition-colors duration-300">
         
         <!-- Topbar -->
-        <header class="h-20 flex items-center px-6 z-10 bg-darkbg/80 backdrop-blur-md">
-            <button class="md:hidden text-gray-200 mr-4" onclick="toggleSidebar()">
+        <header class="h-20 flex items-center px-6 z-10 bg-darkbg/80 backdrop-blur-md transition-colors duration-300">
+            <button class="md:hidden text-textmain mr-4" onclick="toggleSidebar()">
                 <i class="ph ph-list text-2xl"></i>
             </button>
             <h2 id="header-title" class="text-xl font-bold tracking-wide">Home</h2>
@@ -174,38 +240,38 @@
             <div id="view-home" class="view-section p-6 md:p-10 max-w-5xl mx-auto space-y-10">
                 <div>
                     <h3 class="text-3xl font-bold mb-2">What would you like to create today?</h3>
-                    <p class="text-gray-400 text-lg">Generate professional worksheets and slides instantly.</p>
+                    <p class="text-textmuted text-lg">Generate professional worksheets and slides instantly.</p>
                 </div>
 
                 <div class="space-y-6">
                     <!-- Glow Card 1 -->
                     <div class="glow-card p-1 cursor-pointer">
-                        <div class="bg-surface rounded-[1.15rem] p-6 flex items-center gap-6 h-full">
-                            <div class="h-16 w-16 rounded-2xl bg-sapphire/20 flex items-center justify-center shrink-0">
-                                <i class="ph ph-file-text text-3xl text-vibrantcyan"></i>
+                        <div class="bg-surface rounded-[1.15rem] p-6 flex items-center gap-6 h-full transition-colors duration-300">
+                            <div class="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                                <i class="ph ph-file-text text-3xl text-secondary"></i>
                             </div>
                             <div>
-                                <h4 class="text-xl font-bold mb-2">Generate Worksheet</h4>
-                                <p class="text-gray-400">Create customizable worksheets for students. Choose difficulty, topic, and formatting.</p>
+                                <h4 class="text-xl font-bold mb-2 text-textmain">Generate Worksheet</h4>
+                                <p class="text-textmuted">Create customizable worksheets for students. Choose difficulty, topic, and formatting.</p>
                             </div>
                         </div>
                     </div>
 
                     <!-- Glow Card 2 -->
                     <div class="glow-card p-1 cursor-pointer">
-                        <div class="bg-surface rounded-[1.15rem] p-6 flex items-center gap-6 h-full">
-                            <div class="h-16 w-16 rounded-2xl bg-sapphire/20 flex items-center justify-center shrink-0">
-                                <i class="ph ph-presentation-chart text-3xl text-vibrantcyan"></i>
+                        <div class="bg-surface rounded-[1.15rem] p-6 flex items-center gap-6 h-full transition-colors duration-300">
+                            <div class="h-16 w-16 rounded-2xl bg-primary/20 flex items-center justify-center shrink-0">
+                                <i class="ph ph-presentation-chart text-3xl text-secondary"></i>
                             </div>
                             <div>
-                                <h4 class="text-xl font-bold mb-2">Generate PowerPoint</h4>
-                                <p class="text-gray-400">Instantly build beautiful slide decks for your lesson plans with AI assistance.</p>
+                                <h4 class="text-xl font-bold mb-2 text-textmain">Generate PowerPoint</h4>
+                                <p class="text-textmuted">Instantly build beautiful slide decks for your lesson plans with AI assistance.</p>
                             </div>
                         </div>
                     </div>
                 </div>
 
-                <button onclick="switchView('tutor')" class="gradient-btn w-full rounded-2xl p-4 flex justify-center items-center gap-3 text-lg font-bold shadow-lg shadow-electric/20 mt-8">
+                <button onclick="switchView('tutor')" class="gradient-btn w-full rounded-2xl p-4 flex justify-center items-center gap-3 text-lg font-bold shadow-lg shadow-tertiary/20 mt-8">
                     <i class="ph ph-magic-wand text-2xl"></i>
                     Try AI Assistant
                 </button>
@@ -222,7 +288,7 @@
                     
                     <!-- AI Bubble -->
                     <div class="flex justify-start">
-                        <div class="glass-panel p-4 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-md shadow-xl text-gray-100">
+                        <div class="glass-panel p-4 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-md shadow-xl text-textmain">
                             Hello! I am your EduGen AI Tutor. How can I help you plan your lesson today?
                         </div>
                     </div>
@@ -232,8 +298,8 @@
                 <!-- Glass Input -->
                 <div class="z-10 mt-auto pt-4">
                     <div class="glass-input p-2 pl-6 rounded-full flex items-center shadow-2xl">
-                        <input type="text" id="chat-input" placeholder="Ask the AI Tutor..." class="bg-transparent border-none outline-none flex-1 text-gray-100 placeholder-gray-400 text-lg" onkeypress="handleEnter(event)">
-                        <button onclick="sendMessage()" class="h-12 w-12 rounded-full bg-sapphire flex items-center justify-center hover:bg-sapphireDark transition-colors shrink-0 shadow-lg shadow-sapphire/50 ml-2">
+                        <input type="text" id="chat-input" placeholder="Ask the AI Tutor..." class="bg-transparent border-none outline-none flex-1 text-textmain placeholder-textmuted text-lg" onkeypress="handleEnter(event)">
+                        <button onclick="sendMessage()" class="h-12 w-12 rounded-full bg-primary flex items-center justify-center hover:opacity-90 transition-opacity shrink-0 shadow-lg shadow-primary/50 ml-2">
                             <i class="ph ph-paper-plane-right text-xl text-white"></i>
                         </button>
                     </div>
@@ -244,38 +310,55 @@
             <div id="view-settings" class="view-section hidden p-6 md:p-10 max-w-3xl mx-auto space-y-10">
                 <div>
                     <h3 class="text-3xl font-bold mb-2">Appearance</h3>
-                    <p class="text-gray-400 text-lg">Choose a color theme that fits your workflow.</p>
+                    <p class="text-textmuted text-lg">Choose a color theme that fits your workflow.</p>
                 </div>
 
                 <div class="space-y-4">
-                    <div class="bg-surface border-2 border-vibrantcyan p-5 rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden">
-                        <div class="absolute inset-0 bg-gradient-to-r from-sapphire/10 to-vibrantcyan/10"></div>
-                        <div class="h-10 w-10 rounded-xl bg-sapphire/20 flex items-center justify-center shrink-0 relative z-10">
-                            <i class="ph ph-palette text-xl text-vibrantcyan"></i>
+                    <!-- Sapphire Theme -->
+                    <div onclick="setTheme('sapphire')" class="theme-card active bg-surface border-2 p-5 rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden transition-all duration-300">
+                        <div class="theme-bg absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-10 transition-opacity duration-300"></div>
+                        <div class="h-10 w-10 rounded-xl bg-primary/20 flex items-center justify-center shrink-0 relative z-10">
+                            <i class="theme-icon ph ph-palette text-xl text-secondary"></i>
                         </div>
                         <span class="text-lg font-bold relative z-10">Sapphire Dark</span>
-                        <i class="ph ph-check-circle text-2xl text-vibrantcyan ml-auto relative z-10"></i>
+                        <i class="ph ph-check-circle text-2xl theme-icon text-secondary ml-auto relative z-10 hidden checkmark"></i>
                     </div>
 
-                    <div class="bg-surface border border-surfacevariant p-5 rounded-2xl flex items-center gap-4 cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                        <div class="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0">
-                            <i class="ph ph-palette text-xl text-gray-400"></i>
+                    <!-- Emerald Theme -->
+                    <div onclick="setTheme('emerald')" class="theme-card bg-surface border-2 p-5 rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden transition-all duration-300">
+                        <div class="theme-bg absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-0 transition-opacity duration-300"></div>
+                        <div class="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0 relative z-10">
+                            <i class="theme-icon ph ph-palette text-xl text-gray-400"></i>
                         </div>
-                        <span class="text-lg font-medium text-gray-300">High Contrast Light</span>
+                        <span class="text-lg font-medium text-textmain relative z-10">Emerald Dark</span>
+                        <i class="ph ph-check-circle text-2xl theme-icon text-secondary ml-auto relative z-10 hidden checkmark"></i>
                     </div>
 
-                    <div class="bg-surface border border-surfacevariant p-5 rounded-2xl flex items-center gap-4 cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
-                        <div class="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0">
-                            <i class="ph ph-palette text-xl text-gray-400"></i>
+                    <!-- Violet Theme -->
+                    <div onclick="setTheme('violet')" class="theme-card bg-surface border-2 p-5 rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden transition-all duration-300">
+                        <div class="theme-bg absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-0 transition-opacity duration-300"></div>
+                        <div class="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0 relative z-10">
+                            <i class="theme-icon ph ph-palette text-xl text-gray-400"></i>
                         </div>
-                        <span class="text-lg font-medium text-gray-300">Emerald Dark</span>
+                        <span class="text-lg font-medium text-textmain relative z-10">Violet Dark</span>
+                        <i class="ph ph-check-circle text-2xl theme-icon text-secondary ml-auto relative z-10 hidden checkmark"></i>
+                    </div>
+                    
+                    <!-- High Contrast Light Theme -->
+                    <div onclick="setTheme('light')" class="theme-card bg-surface border-2 p-5 rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden transition-all duration-300">
+                        <div class="theme-bg absolute inset-0 bg-gradient-to-r from-primary/10 to-secondary/10 opacity-0 transition-opacity duration-300"></div>
+                        <div class="h-10 w-10 rounded-xl bg-gray-300 flex items-center justify-center shrink-0 relative z-10">
+                            <i class="theme-icon ph ph-palette text-xl text-gray-600"></i>
+                        </div>
+                        <span class="text-lg font-medium text-textmain relative z-10">High Contrast Light</span>
+                        <i class="ph ph-check-circle text-2xl theme-icon text-secondary ml-auto relative z-10 hidden checkmark"></i>
                     </div>
                 </div>
             </div>
 
             <!-- PLACEHOLDER VIEW (Templates, History) -->
             <div id="view-placeholder" class="view-section hidden h-full flex items-center justify-center">
-                <p class="text-2xl text-gray-500 font-medium" id="placeholder-text">Screen Content</p>
+                <p class="text-2xl text-textmuted font-medium" id="placeholder-text">Screen Content</p>
             </div>
 
         </div>
@@ -325,11 +408,11 @@
 
             // Update Nav Styling
             document.querySelectorAll('.nav-item').forEach(el => {
-                el.className = 'nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors';
+                el.className = 'nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-textmuted hover:bg-surfacevariant/50 hover:text-textmain transition-colors';
             });
             const activeNav = document.getElementById(`nav-${viewId}`);
             if (activeNav) {
-                activeNav.className = 'nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-sapphire/20 text-vibrantcyan transition-colors';
+                activeNav.className = 'nav-item active w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-primary/20 text-secondary transition-colors';
             }
 
             // Close sidebar on mobile after clicking
@@ -349,7 +432,7 @@
             // Add User Bubble
             const userBubble = `
             <div class="flex justify-end">
-                <div class="bg-sapphire p-4 rounded-2xl rounded-tr-sm max-w-[85%] md:max-w-md shadow-xl text-white">
+                <div class="bg-primary p-4 rounded-2xl rounded-tr-sm max-w-[85%] md:max-w-md shadow-xl text-white">
                     ${message}
                 </div>
             </div>`;
@@ -363,7 +446,7 @@
             setTimeout(() => {
                 const aiBubble = `
                 <div class="flex justify-start">
-                    <div class="glass-panel p-4 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-md shadow-xl text-gray-100">
+                    <div class="glass-panel p-4 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-md shadow-xl text-textmain">
                         I can definitely help with that! Let's structure the content together.
                     </div>
                 </div>`;
@@ -377,6 +460,35 @@
                 sendMessage();
             }
         }
+
+        // Theme Switching Logic
+        function setTheme(themeName) {
+            // Set data-theme attribute on HTML root element
+            document.documentElement.setAttribute('data-theme', themeName);
+
+            // Update active state on theme cards
+            const cards = document.querySelectorAll('.theme-card');
+            cards.forEach(card => {
+                // Reset states
+                card.classList.remove('active');
+                card.querySelector('.theme-icon').className = 'theme-icon ph ph-palette text-xl text-gray-400';
+                card.querySelector('.theme-bg').classList.remove('opacity-10');
+                card.querySelector('.theme-bg').classList.add('opacity-0');
+                card.querySelector('.checkmark').classList.add('hidden');
+                
+                // Add active states if it matches
+                if (card.getAttribute('onclick').includes(themeName)) {
+                    card.classList.add('active');
+                    card.querySelector('.theme-icon').className = 'theme-icon ph ph-palette text-xl text-secondary';
+                    card.querySelector('.theme-bg').classList.add('opacity-10');
+                    card.querySelector('.theme-bg').classList.remove('opacity-0');
+                    card.querySelector('.checkmark').classList.remove('hidden');
+                }
+            });
+        }
+
+        // Initialize default UI state
+        setTheme('sapphire');
     </script>
 </body>
 </html>
