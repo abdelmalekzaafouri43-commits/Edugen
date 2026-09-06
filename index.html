@@ -1,0 +1,382 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>EduGen - AI Worksheet & PPT Generator</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = {
+            theme: {
+                extend: {
+                    colors: {
+                        sapphire: '#0F52BA',
+                        sapphireDark: '#082C66',
+                        electric: '#BF00FF',
+                        vibrantcyan: '#00EAFF',
+                        darkbg: '#070B19',
+                        surface: '#121A2F',
+                        surfacevariant: '#1D2845'
+                    },
+                    fontFamily: {
+                        sans: ['Inter', 'ui-sans-serif', 'system-ui', '-apple-system', 'BlinkMacSystemFont', 'Segoe UI', 'Roboto', 'Helvetica Neue', 'Arial', 'sans-serif'],
+                    }
+                }
+            }
+        }
+    </script>
+    <!-- Phosphor Icons for crisp, modern icons -->
+    <script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+        
+        body {
+            background-color: #070B19;
+            color: #F3F4F6;
+        }
+
+        /* Glowing Border for Cards */
+        .glow-card {
+            position: relative;
+            background: #121A2F;
+            border-radius: 1.25rem;
+            z-index: 1;
+        }
+        
+        .glow-card::before {
+            content: "";
+            position: absolute;
+            inset: -2px;
+            border-radius: 1.35rem;
+            background: linear-gradient(45deg, #00EAFF, #BF00FF);
+            z-index: -1;
+            opacity: 0.8;
+            transition: opacity 0.3s ease;
+        }
+
+        .glow-card:hover::before {
+            opacity: 1;
+            filter: blur(8px);
+        }
+
+        /* Gradient Button */
+        .gradient-btn {
+            background: linear-gradient(90deg, #0F52BA, #BF00FF);
+            transition: transform 0.2s ease, filter 0.2s ease;
+        }
+        
+        .gradient-btn:hover {
+            transform: scale(1.02);
+            filter: brightness(1.1);
+        }
+
+        /* Glassmorphism for AI Tutor */
+        .glass-panel {
+            background: rgba(18, 26, 47, 0.4);
+            backdrop-filter: blur(12px);
+            -webkit-backdrop-filter: blur(12px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+        }
+
+        .glass-input {
+            background: rgba(18, 26, 47, 0.6);
+            backdrop-filter: blur(16px);
+            -webkit-backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+        }
+
+        /* Ambient Background Orbs for Tutor */
+        .ambient-orb-1 {
+            position: absolute;
+            width: 50vw;
+            height: 50vw;
+            background: radial-gradient(circle, rgba(15,82,186,0.3) 0%, rgba(7,11,25,0) 70%);
+            top: -10%;
+            left: -10%;
+            z-index: 0;
+            pointer-events: none;
+        }
+        
+        .ambient-orb-2 {
+            position: absolute;
+            width: 40vw;
+            height: 40vw;
+            background: radial-gradient(circle, rgba(191,0,255,0.2) 0%, rgba(7,11,25,0) 70%);
+            bottom: -10%;
+            right: -10%;
+            z-index: 0;
+            pointer-events: none;
+        }
+
+        /* Sidebar transitions */
+        .sidebar-transition {
+            transition: transform 0.3s ease-in-out;
+        }
+    </style>
+</head>
+<body class="h-screen w-screen overflow-hidden flex font-sans text-gray-100">
+
+    <!-- Mobile Sidebar Overlay -->
+    <div id="sidebar-overlay" class="fixed inset-0 bg-black/50 z-40 hidden md:hidden" onclick="toggleSidebar()"></div>
+
+    <!-- Sidebar -->
+    <aside id="sidebar" class="fixed md:static inset-y-0 left-0 z-50 w-72 bg-surface border-r border-surfacevariant transform -translate-x-full md:translate-x-0 sidebar-transition flex flex-col">
+        <div class="p-6 flex items-center justify-between">
+            <h1 class="text-2xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-sapphire to-electric">EduGen</h1>
+            <button class="md:hidden text-gray-400 hover:text-white" onclick="toggleSidebar()">
+                <i class="ph ph-x text-2xl"></i>
+            </button>
+        </div>
+        
+        <div class="px-6 mb-4">
+            <div class="h-px w-full bg-surfacevariant"></div>
+        </div>
+
+        <nav class="flex-1 px-4 space-y-2">
+            <button onclick="switchView('home')" id="nav-home" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-sapphire/20 text-vibrantcyan transition-colors">
+                <i class="ph ph-house text-xl"></i>
+                <span class="font-medium">Home</span>
+            </button>
+            <button onclick="switchView('tutor')" id="nav-tutor" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+                <i class="ph ph-robot text-xl"></i>
+                <span class="font-medium">AI Tutor</span>
+            </button>
+            <button onclick="switchView('templates')" id="nav-templates" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+                <i class="ph ph-file-text text-xl"></i>
+                <span class="font-medium">Templates</span>
+            </button>
+            <button onclick="switchView('history')" id="nav-history" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+                <i class="ph ph-clock-counter-clockwise text-xl"></i>
+                <span class="font-medium">History</span>
+            </button>
+            <button onclick="switchView('settings')" id="nav-settings" class="nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors">
+                <i class="ph ph-gear text-xl"></i>
+                <span class="font-medium">Settings</span>
+            </button>
+        </nav>
+    </aside>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-full relative overflow-hidden">
+        
+        <!-- Topbar -->
+        <header class="h-20 flex items-center px-6 z-10 bg-darkbg/80 backdrop-blur-md">
+            <button class="md:hidden text-gray-200 mr-4" onclick="toggleSidebar()">
+                <i class="ph ph-list text-2xl"></i>
+            </button>
+            <h2 id="header-title" class="text-xl font-bold tracking-wide">Home</h2>
+        </header>
+
+        <!-- View Container -->
+        <div class="flex-1 overflow-y-auto relative z-10">
+            
+            <!-- HOME VIEW -->
+            <div id="view-home" class="view-section p-6 md:p-10 max-w-5xl mx-auto space-y-10">
+                <div>
+                    <h3 class="text-3xl font-bold mb-2">What would you like to create today?</h3>
+                    <p class="text-gray-400 text-lg">Generate professional worksheets and slides instantly.</p>
+                </div>
+
+                <div class="space-y-6">
+                    <!-- Glow Card 1 -->
+                    <div class="glow-card p-1 cursor-pointer">
+                        <div class="bg-surface rounded-[1.15rem] p-6 flex items-center gap-6 h-full">
+                            <div class="h-16 w-16 rounded-2xl bg-sapphire/20 flex items-center justify-center shrink-0">
+                                <i class="ph ph-file-text text-3xl text-vibrantcyan"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-2">Generate Worksheet</h4>
+                                <p class="text-gray-400">Create customizable worksheets for students. Choose difficulty, topic, and formatting.</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Glow Card 2 -->
+                    <div class="glow-card p-1 cursor-pointer">
+                        <div class="bg-surface rounded-[1.15rem] p-6 flex items-center gap-6 h-full">
+                            <div class="h-16 w-16 rounded-2xl bg-sapphire/20 flex items-center justify-center shrink-0">
+                                <i class="ph ph-presentation-chart text-3xl text-vibrantcyan"></i>
+                            </div>
+                            <div>
+                                <h4 class="text-xl font-bold mb-2">Generate PowerPoint</h4>
+                                <p class="text-gray-400">Instantly build beautiful slide decks for your lesson plans with AI assistance.</p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <button onclick="switchView('tutor')" class="gradient-btn w-full rounded-2xl p-4 flex justify-center items-center gap-3 text-lg font-bold shadow-lg shadow-electric/20 mt-8">
+                    <i class="ph ph-magic-wand text-2xl"></i>
+                    Try AI Assistant
+                </button>
+            </div>
+
+            <!-- AI TUTOR VIEW -->
+            <div id="view-tutor" class="view-section hidden h-full flex flex-col p-4 md:p-8 relative">
+                <!-- Ambient Orbs -->
+                <div class="ambient-orb-1"></div>
+                <div class="ambient-orb-2"></div>
+
+                <!-- Chat Area -->
+                <div class="flex-1 overflow-y-auto z-10 flex flex-col gap-6 pb-6 px-2" id="chat-container">
+                    
+                    <!-- AI Bubble -->
+                    <div class="flex justify-start">
+                        <div class="glass-panel p-4 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-md shadow-xl text-gray-100">
+                            Hello! I am your EduGen AI Tutor. How can I help you plan your lesson today?
+                        </div>
+                    </div>
+
+                </div>
+
+                <!-- Glass Input -->
+                <div class="z-10 mt-auto pt-4">
+                    <div class="glass-input p-2 pl-6 rounded-full flex items-center shadow-2xl">
+                        <input type="text" id="chat-input" placeholder="Ask the AI Tutor..." class="bg-transparent border-none outline-none flex-1 text-gray-100 placeholder-gray-400 text-lg" onkeypress="handleEnter(event)">
+                        <button onclick="sendMessage()" class="h-12 w-12 rounded-full bg-sapphire flex items-center justify-center hover:bg-sapphireDark transition-colors shrink-0 shadow-lg shadow-sapphire/50 ml-2">
+                            <i class="ph ph-paper-plane-right text-xl text-white"></i>
+                        </button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SETTINGS VIEW -->
+            <div id="view-settings" class="view-section hidden p-6 md:p-10 max-w-3xl mx-auto space-y-10">
+                <div>
+                    <h3 class="text-3xl font-bold mb-2">Appearance</h3>
+                    <p class="text-gray-400 text-lg">Choose a color theme that fits your workflow.</p>
+                </div>
+
+                <div class="space-y-4">
+                    <div class="bg-surface border-2 border-vibrantcyan p-5 rounded-2xl flex items-center gap-4 cursor-pointer relative overflow-hidden">
+                        <div class="absolute inset-0 bg-gradient-to-r from-sapphire/10 to-vibrantcyan/10"></div>
+                        <div class="h-10 w-10 rounded-xl bg-sapphire/20 flex items-center justify-center shrink-0 relative z-10">
+                            <i class="ph ph-palette text-xl text-vibrantcyan"></i>
+                        </div>
+                        <span class="text-lg font-bold relative z-10">Sapphire Dark</span>
+                        <i class="ph ph-check-circle text-2xl text-vibrantcyan ml-auto relative z-10"></i>
+                    </div>
+
+                    <div class="bg-surface border border-surfacevariant p-5 rounded-2xl flex items-center gap-4 cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
+                        <div class="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0">
+                            <i class="ph ph-palette text-xl text-gray-400"></i>
+                        </div>
+                        <span class="text-lg font-medium text-gray-300">High Contrast Light</span>
+                    </div>
+
+                    <div class="bg-surface border border-surfacevariant p-5 rounded-2xl flex items-center gap-4 cursor-pointer opacity-75 hover:opacity-100 transition-opacity">
+                        <div class="h-10 w-10 rounded-xl bg-gray-800 flex items-center justify-center shrink-0">
+                            <i class="ph ph-palette text-xl text-gray-400"></i>
+                        </div>
+                        <span class="text-lg font-medium text-gray-300">Emerald Dark</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PLACEHOLDER VIEW (Templates, History) -->
+            <div id="view-placeholder" class="view-section hidden h-full flex items-center justify-center">
+                <p class="text-2xl text-gray-500 font-medium" id="placeholder-text">Screen Content</p>
+            </div>
+
+        </div>
+    </main>
+
+    <script>
+        // Sidebar Toggle Logic
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('sidebar-overlay');
+
+        function toggleSidebar() {
+            if (sidebar.classList.contains('-translate-x-full')) {
+                sidebar.classList.remove('-translate-x-full');
+                overlay.classList.remove('hidden');
+            } else {
+                sidebar.classList.add('-translate-x-full');
+                overlay.classList.add('hidden');
+            }
+        }
+
+        // View Switching Logic
+        const views = {
+            'home': 'Home',
+            'tutor': 'AI Tutor',
+            'templates': 'Templates',
+            'history': 'History',
+            'settings': 'Settings'
+        };
+
+        function switchView(viewId) {
+            // Update Header Title
+            document.getElementById('header-title').innerText = views[viewId];
+
+            // Hide all views
+            document.querySelectorAll('.view-section').forEach(el => el.classList.add('hidden'));
+
+            // Show selected view
+            const targetView = document.getElementById(`view-${viewId}`);
+            if (targetView) {
+                targetView.classList.remove('hidden');
+                targetView.classList.add('flex'); // Keep flex layout for tutor view
+            } else {
+                const placeholder = document.getElementById('view-placeholder');
+                placeholder.classList.remove('hidden');
+                document.getElementById('placeholder-text').innerText = `${views[viewId]} Screen`;
+            }
+
+            // Update Nav Styling
+            document.querySelectorAll('.nav-item').forEach(el => {
+                el.className = 'nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl text-gray-400 hover:bg-surfacevariant/50 hover:text-gray-200 transition-colors';
+            });
+            const activeNav = document.getElementById(`nav-${viewId}`);
+            if (activeNav) {
+                activeNav.className = 'nav-item w-full flex items-center gap-3 px-4 py-3 rounded-xl bg-sapphire/20 text-vibrantcyan transition-colors';
+            }
+
+            // Close sidebar on mobile after clicking
+            if (window.innerWidth < 768) {
+                toggleSidebar();
+            }
+        }
+
+        // Chat Logic for AI Tutor
+        function sendMessage() {
+            const input = document.getElementById('chat-input');
+            const message = input.value.trim();
+            if (!message) return;
+
+            const chatContainer = document.getElementById('chat-container');
+
+            // Add User Bubble
+            const userBubble = `
+            <div class="flex justify-end">
+                <div class="bg-sapphire p-4 rounded-2xl rounded-tr-sm max-w-[85%] md:max-w-md shadow-xl text-white">
+                    ${message}
+                </div>
+            </div>`;
+            chatContainer.insertAdjacentHTML('beforeend', userBubble);
+            input.value = '';
+
+            // Scroll to bottom
+            chatContainer.scrollTop = chatContainer.scrollHeight;
+
+            // Mock AI Response after a small delay
+            setTimeout(() => {
+                const aiBubble = `
+                <div class="flex justify-start">
+                    <div class="glass-panel p-4 rounded-2xl rounded-tl-sm max-w-[85%] md:max-w-md shadow-xl text-gray-100">
+                        I can definitely help with that! Let's structure the content together.
+                    </div>
+                </div>`;
+                chatContainer.insertAdjacentHTML('beforeend', aiBubble);
+                chatContainer.scrollTop = chatContainer.scrollHeight;
+            }, 800);
+        }
+
+        function handleEnter(e) {
+            if (e.key === 'Enter') {
+                sendMessage();
+            }
+        }
+    </script>
+</body>
+</html>
