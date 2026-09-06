@@ -7,10 +7,10 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.graphics.Color
 
 enum class AppTheme(val title: String) {
-    SAPPHIRE_DARK("Sapphire Dark"),
-    HIGH_CONTRAST_LIGHT("High Contrast Light"),
-    EMERALD_DARK("Emerald Dark"),
-    VIOLET_DARK("Violet Dark")
+    SAPPHIRE_COPILOT("Sapphire Copilot"),
+    EMERALD_COPILOT("Emerald Copilot"),
+    VIOLET_DARK("Violet Dark"),
+    HIGH_CONTRAST_LIGHT("High Contrast Light")
 }
 
 private val SapphireColorScheme = darkColorScheme(
@@ -75,14 +75,14 @@ private val VioletColorScheme = darkColorScheme(
 
 @Composable
 fun MyApplicationTheme(
-    theme: AppTheme = AppTheme.SAPPHIRE_DARK,
+    theme: AppTheme = AppTheme.SAPPHIRE_COPILOT,
     content: @Composable () -> Unit,
 ) {
     val colorScheme = when (theme) {
-        AppTheme.SAPPHIRE_DARK -> SapphireColorScheme
-        AppTheme.HIGH_CONTRAST_LIGHT -> LightColorScheme
-        AppTheme.EMERALD_DARK -> EmeraldColorScheme
+        AppTheme.SAPPHIRE_COPILOT -> SapphireColorScheme
+        AppTheme.EMERALD_COPILOT -> EmeraldColorScheme
         AppTheme.VIOLET_DARK -> VioletColorScheme
+        AppTheme.HIGH_CONTRAST_LIGHT -> LightColorScheme
     }
 
     MaterialTheme(colorScheme = colorScheme, typography = Typography, content = content)

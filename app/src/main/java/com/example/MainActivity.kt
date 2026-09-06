@@ -1,5 +1,8 @@
 package com.example
 
+import androidx.compose.animation.AnimatedVisibility
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.core.tween
 import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
@@ -36,7 +39,7 @@ class MainActivity : ComponentActivity() {
     super.onCreate(savedInstanceState)
     enableEdgeToEdge()
     setContent {
-      var currentTheme by remember { mutableStateOf(AppTheme.SAPPHIRE_DARK) }
+      var currentTheme by remember { mutableStateOf(AppTheme.SAPPHIRE_COPILOT) }
       MyApplicationTheme(theme = currentTheme) {
         EduGenApp(currentTheme = currentTheme, onThemeSelected = { currentTheme = it })
       }
@@ -421,6 +424,7 @@ data class ChatMessage(val text: String, val isUser: Boolean)
 fun AIAgentContent() {
   var messageText by remember { mutableStateOf("") }
   var isLoading by remember { mutableStateOf(false) }
+  var latestAiResponse by remember { mutableStateOf<String?>(null) }
   val scope = rememberCoroutineScope()
   val messages = remember {
     mutableStateListOf(
@@ -429,15 +433,18 @@ fun AIAgentContent() {
   }
 
   // Abstract Background to highlight the glass effect
+  val primaryColor = MaterialTheme.colorScheme.primary
+  val secondaryColor = MaterialTheme.colorScheme.secondary
+  
   Box(modifier = Modifier.fillMaxSize()) {
     Canvas(modifier = Modifier.fillMaxSize()) {
       drawCircle(
-        color = SapphireBlue.copy(alpha = 0.2f),
+        color = primaryColor.copy(alpha = 0.25f),
         radius = size.width * 0.8f,
         center = androidx.compose.ui.geometry.Offset(0f, 0f)
       )
       drawCircle(
-        color = ElectricPurple.copy(alpha = 0.15f),
+        color = secondaryColor.copy(alpha = 0.2f),
         radius = size.width * 0.6f,
         center = androidx.compose.ui.geometry.Offset(size.width, size.height)
       )
@@ -494,6 +501,7 @@ fun AIAgentContent() {
                       val response = RetrofitClient.service.generateContent(apiKey, request)
                       val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "I am not sure how to respond to that."
                       messages.add(ChatMessage(text, false))
+                      latestAiResponse = text
                   } catch (e: Exception) {
                       messages.add(ChatMessage("Error communicating with AI: ${e.message}", false))
                   } finally {
@@ -506,7 +514,7 @@ fun AIAgentContent() {
         )
       }
 
-      // Worksheet Preview Area (New space on the right)
+      // Worksheet Preview Area (New space on the right with fade-in animation)
       Surface(
         modifier = Modifier
           .weight(0.55f)
@@ -515,30 +523,80 @@ fun AIAgentContent() {
         shape = RoundedCornerShape(24.dp),
         border = androidx.compose.foundation.BorderStroke(1.dp, Color.White.copy(alpha = 0.2f))
       ) {
-        Box(
-          contentAlignment = Alignment.Center,
-          modifier = Modifier.fillMaxSize().padding(16.dp)
+        AnimatedVisibility(
+          visible = true,
+          enter = fadeIn(animationSpec = tween(600)),
+          modifier = Modifier.fillMaxSize()
         ) {
-          Column(horizontalAlignment = Alignment.CenterHorizontally) {
-            Icon(
-              imageVector = Icons.Default.Description,
-              contentDescription = null,
-              modifier = Modifier.size(64.dp),
-              tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
-            )
-            Spacer(modifier = Modifier.height(16.dp))
-            Text(
-              text = "Worksheet Preview",
-              style = MaterialTheme.typography.titleLarge,
-              color = MaterialTheme.colorScheme.onSurface
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-              text = "Ask the AI Agent to generate content to see it here.",
-              style = MaterialTheme.typography.bodyMedium,
-              color = MaterialTheme.colorScheme.onSurfaceVariant,
-              textAlign = androidx.compose.ui.text.style.TextAlign.Center
-            )
+          Box(
+            contentAlignment = Alignment.Center,
+            modifier = Modifier.fillMaxSize().padding(24.dp)
+          ) {
+            if (latestAiResponse == null) {
+              Column(horizontalAlignment = Alignment.CenterHorizontally) {
+                Icon(
+                  imageVector = Icons.Default.Description,
+                  contentDescription = null,
+                  modifier = Modifier.size(64.dp),
+                  tint = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f)
+                )
+                Spacer(modifier = Modifier.height(16.dp))
+                Text(
+                  text = "Worksheet Preview",
+                  style = MaterialTheme.typography.titleLarge,
+                  color = MaterialTheme.colorScheme.onSurface
+                )
+                Spacer(modifier = Modifier.height(8.dp))
+                Text(
+                  text = "Ask the AI Agent to generate content to see it previewed here.",
+                  style = MaterialTheme.typography.bodyMedium,
+                  color = MaterialTheme.colorScheme.onSurfaceVariant,
+                  textAlign = androidx.compose.ui.text.style.TextAlign.Center
+                )
+              }
+            } else {
+              Column(
+                modifier = Modifier.fillMaxSize(),
+                verticalArrangement = Arrangement.spacedBy(16.dp)
+              ) {
+                Row(
+                  modifier = Modifier.fillMaxWidth(),
+                  horizontalArrangement = Arrangement.SpaceBetween,
+                  verticalAlignment = Alignment.CenterVertically
+                ) {
+                  Text(
+                    text = "Generated Worksheet",
+                    style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+                    color = MaterialTheme.colorScheme.primary
+                  )
+                  IconButton(onClick = { /* Export or Copy */ }) {
+                    Icon(Icons.Default.ContentCopy, contentDescription = "Copy", tint = MaterialTheme.colorScheme.onSurface)
+                  }
+                }
+                
+                Surface(
+                  modifier = Modifier
+                    .fillMaxWidth()
+                    .weight(1f),
+                  color = MaterialTheme.colorScheme.background.copy(alpha = 0.6f),
+                  shape = RoundedCornerShape(16.dp)
+                ) {
+                  LazyColumn(
+                    modifier = Modifier
+                      .fillMaxSize()
+                      .padding(16.dp)
+                  ) {
+                    item {
+                      Text(
+                        text = latestAiResponse ?: "",
+                        style = MaterialTheme.typography.bodyLarge,
+                        color = MaterialTheme.colorScheme.onBackground
+                      )
+                    }
+                  }
+                }
+              }
+            }
           }
         }
       }
@@ -906,7 +964,7 @@ fun TemplateCard(template: TemplateItem, onClick: () -> Unit) {
 @Preview(showBackground = true)
 @Composable
 fun EduGenAppPreview() {
-  var currentTheme by remember { mutableStateOf(AppTheme.SAPPHIRE_DARK) }
+  var currentTheme by remember { mutableStateOf(AppTheme.SAPPHIRE_COPILOT) }
   MyApplicationTheme(theme = currentTheme) {
     EduGenApp(currentTheme = currentTheme, onThemeSelected = {})
   }
