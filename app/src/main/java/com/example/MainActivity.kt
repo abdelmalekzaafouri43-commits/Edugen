@@ -10,6 +10,9 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.grid.GridCells
+import androidx.compose.foundation.lazy.grid.LazyVerticalGrid
+import androidx.compose.foundation.lazy.grid.items
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.*
@@ -119,7 +122,10 @@ fun EduGenApp(currentTheme: AppTheme, onThemeSelected: (AppTheme) -> Unit) {
       Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
         when (selectedItem) {
           "Home" -> DashboardContent(onNavigate = { selectedItem = it })
+          "WorksheetGen" -> WorksheetGenContent()
+          "PowerPointGen" -> PowerPointGenContent()
           "AI Agent" -> AIAgentContent()
+          "Templates" -> TemplatesContent(onNavigate = { selectedItem = it })
           "Settings" -> SettingsContent(currentTheme, onThemeSelected)
           else -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -264,7 +270,7 @@ fun DashboardContent(onNavigate: (String) -> Unit) {
         title = "Generate Worksheet",
         description = "Create customizable worksheets for students. Choose difficulty, topic, and formatting.",
         icon = Icons.Default.Description,
-        onClick = {}
+        onClick = { onNavigate("WorksheetGen") }
       )
     }
 
@@ -273,7 +279,7 @@ fun DashboardContent(onNavigate: (String) -> Unit) {
         title = "Generate PowerPoint",
         description = "Instantly build beautiful slide decks for your lesson plans with AI assistance.",
         icon = Icons.Default.Slideshow,
-        onClick = {}
+        onClick = { onNavigate("PowerPointGen") }
       )
     }
     
@@ -597,6 +603,250 @@ fun GlassInputField(
             tint = MaterialTheme.colorScheme.onPrimary
           )
         }
+      }
+    }
+  }
+}
+
+@Composable
+fun WorksheetGenContent() {
+  var topic by remember { mutableStateOf("") }
+  var gradeLevel by remember { mutableStateOf("") }
+
+  LazyColumn(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(horizontal = 16.dp),
+    contentPadding = PaddingValues(bottom = 32.dp),
+    verticalArrangement = Arrangement.spacedBy(24.dp)
+  ) {
+    item {
+      Spacer(modifier = Modifier.height(8.dp))
+      Text(
+        text = "Generate Worksheet",
+        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.onBackground
+      )
+      Spacer(modifier = Modifier.height(8.dp))
+      Text(
+        text = "Configure parameters to generate a custom student worksheet.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+
+    item {
+      GlassTextField(
+        value = topic,
+        onValueChange = { topic = it },
+        placeholder = "Topic (e.g., Photosynthesis)"
+      )
+    }
+
+    item {
+      GlassTextField(
+        value = gradeLevel,
+        onValueChange = { gradeLevel = it },
+        placeholder = "Grade Level (e.g., 8th Grade)"
+      )
+    }
+    
+    item {
+        Spacer(modifier = Modifier.height(16.dp))
+        GradientButton(
+          text = "Generate Output",
+          icon = Icons.Default.AutoAwesome,
+          onClick = { /* TODO: Trigger generation */ }
+        )
+    }
+  }
+}
+
+@Composable
+fun PowerPointGenContent() {
+  var presentationTopic by remember { mutableStateOf("") }
+  var audience by remember { mutableStateOf("") }
+
+  LazyColumn(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(horizontal = 16.dp),
+    contentPadding = PaddingValues(bottom = 32.dp),
+    verticalArrangement = Arrangement.spacedBy(24.dp)
+  ) {
+    item {
+      Spacer(modifier = Modifier.height(8.dp))
+      Text(
+        text = "Generate PowerPoint",
+        style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+        color = MaterialTheme.colorScheme.onBackground
+      )
+      Spacer(modifier = Modifier.height(8.dp))
+      Text(
+        text = "Instantly build beautiful slide decks with AI assistance.",
+        style = MaterialTheme.typography.bodyLarge,
+        color = MaterialTheme.colorScheme.onSurfaceVariant
+      )
+    }
+
+    item {
+      GlassTextField(
+        value = presentationTopic,
+        onValueChange = { presentationTopic = it },
+        placeholder = "Presentation Topic"
+      )
+    }
+
+    item {
+      GlassTextField(
+        value = audience,
+        onValueChange = { audience = it },
+        placeholder = "Target Audience (e.g., Beginners)"
+      )
+    }
+    
+    item {
+        Spacer(modifier = Modifier.height(16.dp))
+        GradientButton(
+          text = "Generate Slides",
+          icon = Icons.Default.Slideshow,
+          onClick = { /* TODO: Trigger generation */ }
+        )
+    }
+  }
+}
+
+@Composable
+fun GlassTextField(
+  value: String,
+  onValueChange: (String) -> Unit,
+  placeholder: String
+) {
+  Surface(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(16.dp))
+      .border(
+        width = 1.dp,
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.5f),
+        shape = RoundedCornerShape(16.dp)
+      ),
+    color = MaterialTheme.colorScheme.surface,
+    shape = RoundedCornerShape(16.dp)
+  ) {
+    androidx.compose.foundation.text.BasicTextField(
+      value = value,
+      onValueChange = onValueChange,
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 20.dp, vertical = 16.dp),
+      textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+      decorationBox = { innerTextField ->
+        if (value.isEmpty()) {
+          Text(placeholder, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+        innerTextField()
+      }
+    )
+  }
+}
+
+data class TemplateItem(val title: String, val type: String, val icon: ImageVector, val targetRoute: String)
+
+@Composable
+fun TemplatesContent(onNavigate: (String) -> Unit) {
+  val templates = listOf(
+    TemplateItem("Math Quiz (Algebra)", "Worksheet", Icons.Default.Calculate, "WorksheetGen"),
+    TemplateItem("History Timeline", "Presentation", Icons.Default.History, "PowerPointGen"),
+    TemplateItem("Science Lab Report", "Worksheet", Icons.Default.Science, "WorksheetGen"),
+    TemplateItem("Literature Review", "Presentation", Icons.Default.AutoStories, "PowerPointGen"),
+    TemplateItem("Weekly Lesson Plan", "Worksheet", Icons.Default.CalendarToday, "WorksheetGen"),
+    TemplateItem("Interactive Geography", "Presentation", Icons.Default.Public, "PowerPointGen")
+  )
+
+  Column(
+    modifier = Modifier
+      .fillMaxSize()
+      .padding(horizontal = 16.dp)
+  ) {
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+      text = "Templates Gallery",
+      style = MaterialTheme.typography.headlineSmall.copy(fontWeight = FontWeight.Bold),
+      color = MaterialTheme.colorScheme.onBackground
+    )
+    Spacer(modifier = Modifier.height(8.dp))
+    Text(
+      text = "Select a starter template to quickly generate your content.",
+      style = MaterialTheme.typography.bodyLarge,
+      color = MaterialTheme.colorScheme.onSurfaceVariant
+    )
+    Spacer(modifier = Modifier.height(24.dp))
+
+    LazyVerticalGrid(
+      columns = GridCells.Adaptive(minSize = 150.dp),
+      verticalArrangement = Arrangement.spacedBy(16.dp),
+      horizontalArrangement = Arrangement.spacedBy(16.dp),
+      contentPadding = PaddingValues(bottom = 32.dp),
+      modifier = Modifier.fillMaxSize()
+    ) {
+      items(templates) { template ->
+        TemplateCard(template, onClick = { onNavigate(template.targetRoute) })
+      }
+    }
+  }
+}
+
+@Composable
+fun TemplateCard(template: TemplateItem, onClick: () -> Unit) {
+  Surface(
+    modifier = Modifier
+      .fillMaxWidth()
+      .aspectRatio(0.85f)
+      .clip(RoundedCornerShape(16.dp))
+      .border(
+        width = 1.dp,
+        color = MaterialTheme.colorScheme.primary.copy(alpha = 0.3f),
+        shape = RoundedCornerShape(16.dp)
+      )
+      .clickable { onClick() },
+    color = MaterialTheme.colorScheme.surface,
+    shape = RoundedCornerShape(16.dp)
+  ) {
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp),
+      verticalArrangement = Arrangement.SpaceBetween
+    ) {
+      Box(
+        modifier = Modifier
+          .size(48.dp)
+          .clip(RoundedCornerShape(12.dp))
+          .background(MaterialTheme.colorScheme.primary.copy(alpha = 0.2f)),
+        contentAlignment = Alignment.Center
+      ) {
+        Icon(
+          imageVector = template.icon,
+          contentDescription = null,
+          tint = MaterialTheme.colorScheme.secondary,
+          modifier = Modifier.size(24.dp)
+        )
+      }
+      
+      Column {
+        Text(
+          text = template.title,
+          style = MaterialTheme.typography.titleMedium.copy(fontWeight = FontWeight.Bold),
+          color = MaterialTheme.colorScheme.onSurface,
+          maxLines = 2
+        )
+        Spacer(modifier = Modifier.height(4.dp))
+        Text(
+          text = template.type,
+          style = MaterialTheme.typography.bodySmall,
+          color = MaterialTheme.colorScheme.onSurfaceVariant
+        )
       }
     }
   }
