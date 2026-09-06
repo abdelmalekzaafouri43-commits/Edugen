@@ -7,6 +7,7 @@ import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
 import androidx.compose.foundation.border
 import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.shape.RoundedCornerShape
@@ -49,6 +50,7 @@ fun EduGenApp(currentTheme: AppTheme, onThemeSelected: (AppTheme) -> Unit) {
 
   val navItems = listOf(
     NavigationItem("Home", Icons.Default.Home),
+    NavigationItem("AI Tutor", Icons.Default.SmartToy),
     NavigationItem("Templates", Icons.Default.Description),
     NavigationItem("History", Icons.Default.History),
     NavigationItem("Settings", Icons.Default.Settings)
@@ -116,7 +118,8 @@ fun EduGenApp(currentTheme: AppTheme, onThemeSelected: (AppTheme) -> Unit) {
     ) { innerPadding ->
       Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
         when (selectedItem) {
-          "Home" -> DashboardContent()
+          "Home" -> DashboardContent(onNavigate = { selectedItem = it })
+          "AI Tutor" -> AITutorContent()
           "Settings" -> SettingsContent(currentTheme, onThemeSelected)
           else -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -233,7 +236,7 @@ fun ThemeSelectionCard(theme: AppTheme, isSelected: Boolean, onClick: () -> Unit
 }
 
 @Composable
-fun DashboardContent() {
+fun DashboardContent(onNavigate: (String) -> Unit) {
   LazyColumn(
     modifier = Modifier
       .fillMaxSize()
@@ -279,7 +282,7 @@ fun DashboardContent() {
       GradientButton(
         text = "Try AI Assistant",
         icon = Icons.Default.AutoAwesome,
-        onClick = {}
+        onClick = { onNavigate("AI Tutor") }
       )
     }
   }
@@ -405,6 +408,166 @@ fun GradientButton(
 }
 
 data class NavigationItem(val title: String, val icon: ImageVector)
+
+data class ChatMessage(val text: String, val isUser: Boolean)
+
+@Composable
+fun AITutorContent() {
+  var messageText by remember { mutableStateOf("") }
+  val messages = remember {
+    mutableStateListOf(
+      ChatMessage("Hello! I am your EduGen AI Tutor. How can I help you plan your lesson today?", false)
+    )
+  }
+
+  // Abstract Background to highlight the glass effect
+  Box(modifier = Modifier.fillMaxSize()) {
+    Canvas(modifier = Modifier.fillMaxSize()) {
+      drawCircle(
+        color = SapphireBlue.copy(alpha = 0.2f),
+        radius = size.width * 0.8f,
+        center = androidx.compose.ui.geometry.Offset(0f, 0f)
+      )
+      drawCircle(
+        color = ElectricPurple.copy(alpha = 0.15f),
+        radius = size.width * 0.6f,
+        center = androidx.compose.ui.geometry.Offset(size.width, size.height)
+      )
+    }
+
+    Column(
+      modifier = Modifier
+        .fillMaxSize()
+        .padding(16.dp)
+    ) {
+      // Chat Messages Area
+      LazyColumn(
+        modifier = Modifier
+          .weight(1f)
+          .fillMaxWidth(),
+        contentPadding = PaddingValues(bottom = 16.dp),
+        verticalArrangement = Arrangement.spacedBy(16.dp)
+      ) {
+        items(messages.size) { index ->
+          val msg = messages[index]
+          ChatBubble(message = msg)
+        }
+      }
+
+      // Glass Input Area
+      GlassInputField(
+        value = messageText,
+        onValueChange = { messageText = it },
+        onSend = {
+          if (messageText.isNotBlank()) {
+            messages.add(ChatMessage(messageText, true))
+            messageText = ""
+            // Mock AI response
+            messages.add(ChatMessage("I can definitely help with that. Let's structure it together.", false))
+          }
+        }
+      )
+    }
+  }
+}
+
+@Composable
+fun ChatBubble(message: ChatMessage) {
+  Row(
+    modifier = Modifier.fillMaxWidth(),
+    horizontalArrangement = if (message.isUser) Arrangement.End else Arrangement.Start
+  ) {
+    if (message.isUser) {
+      Surface(
+        color = MaterialTheme.colorScheme.primary,
+        shape = RoundedCornerShape(20.dp, 20.dp, 4.dp, 20.dp),
+        modifier = Modifier.widthIn(max = 280.dp)
+      ) {
+        Text(
+          text = message.text,
+          modifier = Modifier.padding(16.dp),
+          color = MaterialTheme.colorScheme.onPrimary,
+          style = MaterialTheme.typography.bodyLarge
+        )
+      }
+    } else {
+      Surface(
+        color = MaterialTheme.colorScheme.surface.copy(alpha = 0.4f),
+        shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp),
+        modifier = Modifier
+          .widthIn(max = 280.dp)
+          .border(
+            width = 1.dp,
+            color = Color.White.copy(alpha = 0.2f),
+            shape = RoundedCornerShape(20.dp, 20.dp, 20.dp, 4.dp)
+          )
+      ) {
+        Text(
+          text = message.text,
+          modifier = Modifier.padding(16.dp),
+          color = MaterialTheme.colorScheme.onSurface,
+          style = MaterialTheme.typography.bodyLarge
+        )
+      }
+    }
+  }
+}
+
+@Composable
+fun GlassInputField(
+  value: String,
+  onValueChange: (String) -> Unit,
+  onSend: () -> Unit
+) {
+  Surface(
+    modifier = Modifier
+      .fillMaxWidth()
+      .clip(RoundedCornerShape(24.dp))
+      .border(
+        width = 1.dp,
+        color = Color.White.copy(alpha = 0.2f),
+        shape = RoundedCornerShape(24.dp)
+      ),
+    color = MaterialTheme.colorScheme.surface.copy(alpha = 0.3f),
+    shape = RoundedCornerShape(24.dp)
+  ) {
+    Row(
+      modifier = Modifier
+        .fillMaxWidth()
+        .padding(horizontal = 8.dp, vertical = 8.dp),
+      verticalAlignment = Alignment.CenterVertically
+    ) {
+      androidx.compose.foundation.text.BasicTextField(
+        value = value,
+        onValueChange = onValueChange,
+        modifier = Modifier
+          .weight(1f)
+          .padding(horizontal = 16.dp, vertical = 12.dp),
+        textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
+        decorationBox = { innerTextField ->
+          if (value.isEmpty()) {
+            Text("Ask the AI Tutor...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+          }
+          innerTextField()
+        }
+      )
+      
+      IconButton(
+        onClick = onSend,
+        modifier = Modifier
+          .size(48.dp)
+          .clip(RoundedCornerShape(50))
+          .background(MaterialTheme.colorScheme.primary)
+      ) {
+        Icon(
+          imageVector = Icons.Default.Send,
+          contentDescription = "Send",
+          tint = MaterialTheme.colorScheme.onPrimary
+        )
+      }
+    }
+  }
+}
 
 @Preview(showBackground = true)
 @Composable
