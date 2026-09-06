@@ -50,7 +50,7 @@ fun EduGenApp(currentTheme: AppTheme, onThemeSelected: (AppTheme) -> Unit) {
 
   val navItems = listOf(
     NavigationItem("Home", Icons.Default.Home),
-    NavigationItem("AI Tutor", Icons.Default.SmartToy),
+    NavigationItem("AI Agent", Icons.Default.SmartToy),
     NavigationItem("Templates", Icons.Default.Description),
     NavigationItem("History", Icons.Default.History),
     NavigationItem("Settings", Icons.Default.Settings)
@@ -119,7 +119,7 @@ fun EduGenApp(currentTheme: AppTheme, onThemeSelected: (AppTheme) -> Unit) {
       Box(modifier = Modifier.padding(innerPadding).fillMaxSize()) {
         when (selectedItem) {
           "Home" -> DashboardContent(onNavigate = { selectedItem = it })
-          "AI Tutor" -> AITutorContent()
+          "AI Agent" -> AIAgentContent()
           "Settings" -> SettingsContent(currentTheme, onThemeSelected)
           else -> {
             Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
@@ -282,7 +282,7 @@ fun DashboardContent(onNavigate: (String) -> Unit) {
       GradientButton(
         text = "Try AI Assistant",
         icon = Icons.Default.AutoAwesome,
-        onClick = { onNavigate("AI Tutor") }
+        onClick = { onNavigate("AI Agent") }
       )
     }
   }
@@ -412,11 +412,13 @@ data class NavigationItem(val title: String, val icon: ImageVector)
 data class ChatMessage(val text: String, val isUser: Boolean)
 
 @Composable
-fun AITutorContent() {
+fun AIAgentContent() {
   var messageText by remember { mutableStateOf("") }
+  var isLoading by remember { mutableStateOf(false) }
+  val scope = rememberCoroutineScope()
   val messages = remember {
     mutableStateListOf(
-      ChatMessage("Hello! I am your EduGen AI Tutor. How can I help you plan your lesson today?", false)
+      ChatMessage("Hello! I am your EduGen AI Agent. How can I help you plan your lesson today?", false)
     )
   }
 
@@ -459,13 +461,35 @@ fun AITutorContent() {
         value = messageText,
         onValueChange = { messageText = it },
         onSend = {
-          if (messageText.isNotBlank()) {
-            messages.add(ChatMessage(messageText, true))
+          if (messageText.isNotBlank() && !isLoading) {
+            val userMsg = messageText
+            messages.add(ChatMessage(userMsg, true))
             messageText = ""
-            // Mock AI response
-            messages.add(ChatMessage("I can definitely help with that. Let's structure it together.", false))
+            isLoading = true
+            
+            scope.launch {
+                try {
+                    val apiKey = BuildConfig.GEMINI_API_KEY
+                    if (apiKey.isEmpty() || apiKey == "MY_GEMINI_API_KEY") {
+                        messages.add(ChatMessage("API Key is missing! Please configure it in the AI Studio Secrets panel.", false))
+                        isLoading = false
+                        return@launch
+                    }
+                    val request = GenerateContentRequest(
+                        contents = listOf(Content(parts = listOf(Part(text = userMsg))))
+                    )
+                    val response = RetrofitClient.service.generateContent(apiKey, request)
+                    val text = response.candidates?.firstOrNull()?.content?.parts?.firstOrNull()?.text ?: "I am not sure how to respond to that."
+                    messages.add(ChatMessage(text, false))
+                } catch (e: Exception) {
+                    messages.add(ChatMessage("Error communicating with AI: ${e.message}", false))
+                } finally {
+                    isLoading = false
+                }
+            }
           }
-        }
+        },
+        isLoading = isLoading
       )
     }
   }
@@ -517,7 +541,8 @@ fun ChatBubble(message: ChatMessage) {
 fun GlassInputField(
   value: String,
   onValueChange: (String) -> Unit,
-  onSend: () -> Unit
+  onSend: () -> Unit,
+  isLoading: Boolean = false
 ) {
   Surface(
     modifier = Modifier
@@ -546,24 +571,32 @@ fun GlassInputField(
         textStyle = MaterialTheme.typography.bodyLarge.copy(color = MaterialTheme.colorScheme.onSurface),
         decorationBox = { innerTextField ->
           if (value.isEmpty()) {
-            Text("Ask the AI Tutor...", color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("Ask the AI Agent...", color = MaterialTheme.colorScheme.onSurfaceVariant)
           }
           innerTextField()
         }
       )
       
       IconButton(
-        onClick = onSend,
+        onClick = { if (!isLoading) onSend() },
         modifier = Modifier
           .size(48.dp)
           .clip(RoundedCornerShape(50))
           .background(MaterialTheme.colorScheme.primary)
       ) {
-        Icon(
-          imageVector = Icons.Default.Send,
-          contentDescription = "Send",
-          tint = MaterialTheme.colorScheme.onPrimary
-        )
+        if (isLoading) {
+          CircularProgressIndicator(
+            color = MaterialTheme.colorScheme.onPrimary,
+            modifier = Modifier.size(24.dp),
+            strokeWidth = 2.dp
+          )
+        } else {
+          Icon(
+            imageVector = Icons.Default.Send,
+            contentDescription = "Send",
+            tint = MaterialTheme.colorScheme.onPrimary
+          )
+        }
       }
     }
   }
